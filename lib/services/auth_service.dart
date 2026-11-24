@@ -16,6 +16,15 @@ String _friendlyMessage(FirebaseAuthException e) {
       return 'That email is already registered.';
     case 'weak-password':
       return 'Password must be at least 6 characters.';
+    // Firebase blocks the account for a while after many reset requests.
+    case 'too-many-requests':
+      return 'Too many attempts. Please wait a few minutes and try again.';
+    // The phone is offline, so the request never reached Firebase.
+    case 'network-request-failed':
+      return 'No internet connection. Please try again.';
+    // Only appears if email enumeration protection is off in the console.
+    case 'user-not-found':
+      return 'No account uses that email.';
     default:
       debugPrint('Auth error: ${e.code}');
       return 'Something went wrong. Please try again.';
@@ -47,4 +56,19 @@ class AuthService {
       throw AuthFailure(_friendlyMessage(e));
     }
   }
+
+  /// Sends Firebase's password reset email. The user sets the new password
+  /// on Firebase's own web page, so the app never handles it.
+  Future<void> sendPasswordReset(String email) async {
+    // Ask Firebase to email a reset link to this address.
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    }
+    // Turn Firebase's error code into our own friendly message,
+    // the same way login and register do.
+    on FirebaseAuthException catch (e) {
+      throw AuthFailure(_friendlyMessage(e));
+    }
+  }
+
 }

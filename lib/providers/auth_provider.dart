@@ -44,6 +44,35 @@ class AuthProvider extends ChangeNotifier{
     notifyListeners();
   }
 
+  /// Sends a password reset email.
+  /// Returns null on success, or a friendly error message.
+  Future<String?> sendPasswordReset(String email) async {
+    // Show the spinner on the dialog's button.
+    _isLoading = true;
+    notifyListeners();
+
+    // Ask the service to send the email. null means it worked.
+    try {
+      await _authService.sendPasswordReset(email);
+      return null;
+    }
+    // A known Firebase problem (bad email, offline, too many tries).
+    on AuthFailure catch (e) {
+      return e.message;
+    }
+    // Anything unexpected: log it for us, show a safe message to the user.
+    catch (e) {
+      debugPrint('Password reset error: $e');
+      return 'Could not send the reset email. Please try again.';
+    }
+    // Always hide the spinner, whether it worked or failed.
+    finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
   Future<String?> register(
     String fullname,
     String studentId,

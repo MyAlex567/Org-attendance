@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../atoms/app_text.dart';
 import 'register_page.dart';
+import '../organisms/forgot_password_form.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,13 +17,57 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
 
+  Future<void> _showForgotPasswordDialog() async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        // watch: the dialog rebuilds when isLoading changes (spinner).
+        final isLoading = dialogContext.watch<AuthProvider>().isLoading;
 
+        return ForgotPasswordForm(
+          isLoading: isLoading,
+          onSubmit: (email) async {
+            // Ask Firebase (through the provider) to send the email.
+            final error =
+                await context.read<AuthProvider>().sendPasswordReset(email);
+
+            // The page may have closed while we waited.
+            if (!mounted) return;
+
+            // Error: show it and keep the dialog open to try again.
+            if (error != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(error)),
+              );
+              return;
+            }
+
+            // Success: close the dialog (if the user hasn't already).
+            if (!dialogContext.mounted) return;
+            Navigator.pop(dialogContext);
+
+            // Same message whether or not the email has an account,
+            // so nobody can use this to find out who is registered.
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'If that email has an account, we sent a reset link. '
+                  'Check your inbox and spam folder.',
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return AuthTemplate(
       form: LoginForm(
         isLoading: context.watch<AuthProvider>().isLoading,
+        onForgotPassword: _showForgotPasswordDialog,
         onSubmit: (email, password) async{
           final error = await context.read<AuthProvider>().login(email, password);
 

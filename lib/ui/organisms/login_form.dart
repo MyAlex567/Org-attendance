@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import '../../utils/validators.dart';
 import '../atoms/app_button.dart';
 import '../molecules/app_text_field.dart';
+import '../atoms/app_text.dart';
+import '../../theme/app_theme.dart';
 
 /// Email and password fields with a "Log in" button. The page decides what
 /// happens on submit, so this form never talks to Firebase.
 class LoginForm extends StatefulWidget {
   final void Function(String email, String password) onSubmit;
   final bool isLoading;
+  final VoidCallback onForgotPassword;
 
   const LoginForm({
     super.key,
     required this.onSubmit,
     required this.isLoading,
+    required this.onForgotPassword,
   });
 
   @override
@@ -57,7 +61,19 @@ class _LoginFormState extends State<LoginForm> {
             obscureText: true,
             validator: Validators.password,
           ),
-          const SizedBox(height: 24),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: widget.onForgotPassword,
+              child: const AppText(
+                text: 'Forgot password?',
+                variant: AppTextVariant.caption,
+                fontWeight: FontWeight.w600,
+                color: AppColors.green,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16,),
           AppButton(
             label: 'Log in',
             onPressed: _submit,
