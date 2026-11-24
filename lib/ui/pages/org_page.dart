@@ -15,6 +15,8 @@ import '../molecules/status_message.dart';
 import 'attendance_list_page.dart';
 import 'members_page.dart';
 import 'take_attendance_page.dart';
+import '../../providers/auth_provider.dart';
+import '../organisms/confirm_dialog.dart';
 
 /// Org Page: the org's name and my role, the join code and Members (admin),
 /// Take attendance (officers and admin) and the list of sessions.
@@ -32,6 +34,47 @@ class OrgPage extends StatelessWidget {
 
   bool get _isAdmin => role == 'admin';
   bool get _isStaff => role == 'admin' || role == 'officer';
+
+  /// Asks for confirmation, leaves the org, then goes back to Home.
+  // OrgPage is a StatelessWidget, so it has no built-in context like a
+  // State does. That's why this method takes BuildContext as a parameter.
+  Future<void> _leaveOrg(BuildContext context) async {
+    // 1. Ask first. ConfirmDialog returns true (Leave) or false (Cancel).
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => ConfirmDialog(
+        title: 'Leave organization',
+        message: 'Leave $orgName? You will need the join code to come back. '
+            'Your past attendance stays in your History.',
+        confirmLabel: 'Leave',
+      ),
+    );
+    // Stop if they cancelled, or the page closed while the dialog was open.
+    if (confirmed != true || !context.mounted) return;
+
+    // 2. Leave the org through the provider (pages never talk to Firebase).
+    final user = context.read<AuthProvider>().user;
+    final error = await context.read<OrgProvider>().leaveOrg(orgId, user);
+
+    // The page may have closed while Firestore was working.
+    if (!context.mounted) return;
+
+    // 3a. Error: show it and stay on the page.
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      return;
+    }
+
+    // 3b. Success: grab the messenger BEFORE leaving the page, because
+    // after pop this page's context no longer exists.
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.pop(context); // back to Home; the org disappears by itself
+    messenger.showSnackBar(
+      SnackBar(content: Text('You left $orgName')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +99,18 @@ class OrgPage extends StatelessWidget {
             ),
           ],
         ),
+
+        // Members and officers can leave. The admin can't (the rules block
+        // deleting the admin), so the button is hidden for them.
+        actions: [
+          if (!_isAdmin)
+            TextButton(
+              onPressed: () => _leaveOrg(context),
+              style: TextButton.styleFrom(foregroundColor: AppColors.white),
+              child: const Text('Leave'),
+            ),
+        ],
+
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

@@ -127,6 +127,25 @@ class OrgProvider extends ChangeNotifier{
     );
   }
 
+  /// The user leaves an org (members and officers only; the rules block
+  /// the admin). It's the same three deletes as removeMember, done for the
+  /// user's own uid, so no new service method is needed.
+  /// Returns null on success, or a friendly error message.
+  Future<String?> leaveOrg(String orgId, AppUser? user) {
+    // The profile loads on Home; without it we don't know whose uid to use.
+    if (user == null) {
+      return Future.value('Your profile is still loading. Please try again later');
+    }
+
+    // Reuse the service's removeMember with MY uid, through the shared
+    // _run helper (loading flag + friendly error message).
+    return _run(
+      () => _firestoreService.removeMember(orgId, user.uid),
+      'Could not leave the organization. Please try again',
+    );
+  }
+
+
   /// Runs one service call with the same loading and error handling every
   /// time. Returns null on success, or the message to show in a SnackBar.
   Future<String?> _run(
