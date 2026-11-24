@@ -30,7 +30,7 @@ class Member {
   }
 
   /// The fields saved to Firestore. uid is the document ID, and joinedAt is
-  /// added by FirestoreService with a server timestamp.
+  /// added by OrgService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'name': name,

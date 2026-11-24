@@ -33,12 +33,20 @@ String _friendlyMessage(FirebaseAuthException e) {
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
+  /// The uid of the logged-in user, or null when logged out.
+  /// Used in: AuthProvider.loadUser (when HomePage opens, and after login)
   String? get currentUid => _auth.currentUser?.uid;
 
+  /// Live uid: a value when logged in, null when logged out.
+  /// Used in: AuthGate (via AuthProvider.uidChanges)
   Stream<String?> get uidChanges => _auth.authStateChanges().map((user) => user?.uid);
 
+  /// Signs the user out of Firebase Auth.
+  /// Used in: ProfilePage, Log out button (via AuthProvider.logout)
   Future<void> logout() => _auth.signOut();
 
+  /// Signs in with email and password and returns the uid.
+  /// Used in: LoginPage (via AuthProvider.login)
   Future<String> login(String email, String password) async{
     try{
       final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -48,6 +56,8 @@ class AuthService {
     }
   }
 
+  /// Creates a Firebase Auth account and returns the new uid.
+  /// Used in: RegisterPage (via AuthProvider.register)
   Future<String> register(String email, String password) async{
     try{
       final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -59,6 +69,7 @@ class AuthService {
 
   /// Sends Firebase's password reset email. The user sets the new password
   /// on Firebase's own web page, so the app never handles it.
+  /// Used in: LoginPage, Forgot password dialog (via AuthProvider.sendPasswordReset)
   Future<void> sendPasswordReset(String email) async {
     // Ask Firebase to email a reset link to this address.
     try {

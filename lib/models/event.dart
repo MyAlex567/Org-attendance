@@ -18,7 +18,7 @@ class Event {
   });
 
   /// Builds an Event from a Firestore document at orgs/{orgId}/events/{id}.
-  /// Both IDs come from the path, not from fields. FirestoreService converts
+  /// Both IDs come from the path, not from fields. AttendanceService converts
   /// startsAt from a Firestore Timestamp to a DateTime before calling this,
   /// so this model doesn't need to import Firebase.
   factory Event.fromMap(String orgId, String id, Map<String, dynamic> map) {
@@ -36,7 +36,7 @@ class Event {
 
   /// The fields saved to Firestore. Firestore stores startsAt as a Timestamp
   /// automatically. orgId and id are in the path, and createdAt is added by
-  /// FirestoreService with a server timestamp.
+  /// AttendanceService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'title': title,

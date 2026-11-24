@@ -18,7 +18,7 @@ class AttendanceHistory {
     required this.scannedAt,
   });
 
-  /// FirestoreService converts scannedAt from a Timestamp to a DateTime
+  /// AttendanceService converts scannedAt from a Timestamp to a DateTime
   /// (or null) before calling this.
   factory AttendanceHistory.fromMap(String eventId, Map<String, dynamic> map) {
     return AttendanceHistory(
@@ -31,7 +31,7 @@ class AttendanceHistory {
   }
 
   /// The fields saved to Firestore. eventId is the document ID, and scannedAt
-  /// is added by FirestoreService with a server timestamp.
+  /// is added by AttendanceService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'orgId': orgId,

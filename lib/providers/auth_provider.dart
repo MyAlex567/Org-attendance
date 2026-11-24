@@ -1,27 +1,37 @@
 import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
 import '../models/app_user.dart';
-import '../services/firestore_service.dart';
+import '../services/user_service.dart';
 
 class AuthProvider extends ChangeNotifier{
   final _authService = AuthService();
-  final _firestoreService = FirestoreService();
+  final _userService = UserService();
 
+  /// Live uid from Firebase Auth: a value when logged in, null when logged out.
+  /// Used in: AuthGate (shows Login or MainPage)
   late final Stream<String?> uidChanges = _authService.uidChanges;
 
   bool _isLoading = false;
   AppUser? _user;
+  /// The logged-in user's profile; null until loadUser finishes.
+  /// Used in: HomePage, MyQrPage, HistoryPage, OrgPage, MembersPage, InvitationsPage, TakeAttendancePage, ScanPage
   AppUser? get user => _user;
+  /// True while login, register or a reset email is in progress (button spinners).
+  /// Used in: LoginPage (and its Forgot password dialog), RegisterPage
   bool get isLoading => _isLoading;
 
+  /// Reads the logged-in user's profile from Firestore into [user].
+  /// Used in: HomePage when it opens, and login() below
   Future<void> loadUser() async{
     final uid = _authService.currentUid;
     if(uid == null) return;
 
-    _user = await _firestoreService.getUser(uid);
+    _user = await _userService.getUser(uid);
     notifyListeners();
   }
 
+  /// Logs in. Returns null on success, or a friendly error message.
+  /// Used in: LoginPage
   Future<String?> login(String email, String password) async{
     _isLoading = true;
     notifyListeners();
@@ -38,6 +48,8 @@ class AuthProvider extends ChangeNotifier{
     }
   }
 
+  /// Logs out and clears the profile.
+  /// Used in: ProfilePage, Log out button
   Future<void> logout() async {
     await _authService.logout();
     _user = null;
@@ -46,6 +58,7 @@ class AuthProvider extends ChangeNotifier{
 
   /// Sends a password reset email.
   /// Returns null on success, or a friendly error message.
+  /// Used in: LoginPage, Forgot password dialog
   Future<String?> sendPasswordReset(String email) async {
     // Show the spinner on the dialog's button.
     _isLoading = true;
@@ -73,6 +86,8 @@ class AuthProvider extends ChangeNotifier{
   }
 
 
+  /// Creates the account and saves the profile. Returns null on success, or a friendly error message.
+  /// Used in: RegisterPage
   Future<String?> register(
     String fullname,
     String studentId,
@@ -92,7 +107,7 @@ class AuthProvider extends ChangeNotifier{
         email: email,
       );
       
-      await _firestoreService.createUser(user);
+      await _userService.createUser(user);
       _user = user;
 
       return null;

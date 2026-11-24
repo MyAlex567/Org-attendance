@@ -19,7 +19,7 @@ class Invite {
   }
 
   /// The fields saved to Firestore. orgId is the document ID, and createdAt is
-  /// added by FirestoreService with a server timestamp.
+  /// added by OrgService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'orgName': orgName,

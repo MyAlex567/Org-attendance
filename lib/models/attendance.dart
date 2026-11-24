@@ -23,7 +23,7 @@ class Attendance {
   /// True for "Mark me present" records, shown with a "Self check-in" label.
   bool get isSelfCheckIn => method == 'self';
 
-  /// FirestoreService converts scannedAt from a Timestamp to a DateTime
+  /// AttendanceService converts scannedAt from a Timestamp to a DateTime
   /// (or null) before calling this.
   factory Attendance.fromMap(String uid, Map<String, dynamic> map) {
     return Attendance(
@@ -37,7 +37,7 @@ class Attendance {
   }
 
   /// The fields saved to Firestore. scannedAt is left out because
-  /// FirestoreService adds it with a server timestamp, so the time comes from
+  /// AttendanceService adds it with a server timestamp, so the time comes from
   /// Firebase, not the phone's clock.
   Map<String, dynamic> toMap() {
     return {

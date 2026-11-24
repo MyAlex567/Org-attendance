@@ -23,7 +23,7 @@ class Org {
   }
 
   /// The fields saved to Firestore. id is the document ID, and createdAt is
-  /// added by FirestoreService with a server timestamp.
+  /// added by OrgService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'name': name,

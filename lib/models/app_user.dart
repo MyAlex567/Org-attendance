@@ -23,7 +23,7 @@ class AppUser {
   }
 
   /// The fields saved to Firestore. uid is the document ID, and createdAt is
-  /// added by FirestoreService with a server timestamp.
+  /// added by UserService with a server timestamp.
   Map<String, dynamic> toMap() {
     return {
       'fullName': fullName,
